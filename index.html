@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ciclo Box Pet (demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF5F0; --surface:#FFFFFF; --surface2:#F6FAF7; --ink:#15261D; --muted:#4C6157;
+  --brand:#1E7F55; --brand-ink:#FFFFFF; --accent:#FF6F7D; --kraft:#C8975C; --kraft-d:#A87A43;
+  --line:#D3E2D8; --warn:#B7791F; --danger:#C2413B;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1A14; --surface:#17251D; --surface2:#1C2C23; --ink:#E7F1EA; --muted:#A3B8AC;
+    --brand:#43B883; --brand-ink:#08140E; --accent:#FF8A96; --kraft:#B88A52; --kraft-d:#946B3A;
+    --line:#2A3B31; --warn:#E3A948; --danger:#F07A73;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1A14; --surface:#17251D; --surface2:#1C2C23; --ink:#E7F1EA; --muted:#A3B8AC;
+  --brand:#43B883; --brand-ink:#08140E; --accent:#FF8A96; --kraft:#B88A52; --kraft-d:#946B3A;
+  --line:#2A3B31; --warn:#E3A948; --danger:#F07A73;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(env(safe-area-inset-top,0px) + 80px)}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Figtree,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:17px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+h1,h2,h3{font-family:"Baloo 2",Figtree,system-ui,sans-serif;line-height:1.1;margin:0}
+img,svg{max-width:100%}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:8px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+/* header */
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--surface);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;gap:20px;height:64px}
+.logo{display:flex;align-items:center;gap:8px;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:24px;color:var(--ink);text-decoration:none}
+.logo svg{width:30px;height:30px}
+.nav a.link{color:var(--muted);text-decoration:none;font-weight:600;font-size:15px}
+.nav a.link:hover{color:var(--ink)}
+.nav .spacer{flex:1}
+.links{display:flex;gap:20px}
+@media (max-width:720px){.links{display:none}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;padding:12px 22px;font-weight:700;cursor:pointer;text-decoration:none;font-size:16px}
+.btn-primary{background:var(--brand);color:var(--brand-ink)}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.btn-ghost:hover{border-color:var(--ink)}
+.btn-danger{background:transparent;color:var(--danger);border:2px solid currentColor}
+.btn-sm{padding:8px 16px;font-size:15px}
+.badge-demo{font-size:13px;font-weight:600;background:var(--accent);color:#2A0B0F;padding:3px 10px;border-radius:999px}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1fr 1.05fr;gap:48px;align-items:center;padding:56px 0 64px}
+@media (max-width:900px){.hero{grid-template-columns:1fr;gap:32px;padding-top:36px}}
+.hero h1{font-size:clamp(40px,6vw,64px);font-weight:800;letter-spacing:-.5px}
+.hero p.lead{font-size:19px;color:var(--muted);max-width:30em;margin:18px 0 26px}
+.hero .ticks{list-style:none;padding:0;margin:26px 0 0;display:grid;gap:8px;color:var(--muted);font-size:16px}
+.hero .ticks li::before{content:"✓";color:var(--brand);font-weight:800;margin-right:10px}
+
+/* builder */
+.builder{background:var(--surface);border:2px solid var(--ink);border-radius:28px;padding:24px;box-shadow:8px 8px 0 var(--ink)}
+.builder h2{font-size:26px;margin-bottom:14px}
+.field{margin:14px 0}
+.field-label{font-weight:700;font-size:14px;color:var(--muted);margin-bottom:8px}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{border:2px solid var(--line);background:var(--surface2);border-radius:14px;padding:9px 16px;font-weight:600;cursor:pointer}
+.seg button[aria-pressed="true"]{border-color:var(--brand);background:var(--brand);color:var(--brand-ink)}
+.box-stage{display:flex;justify-content:center;padding:18px 0 6px}
+.box{position:relative;width:min(300px,100%);height:150px;background:var(--kraft);border-radius:6px 6px 14px 14px;border:2px solid var(--ink);display:flex;align-items:flex-start;justify-content:center;margin-top:44px}
+.box::before,.box::after{content:"";position:absolute;top:-34px;width:52%;height:34px;background:var(--kraft-d);border:2px solid var(--ink);border-bottom:0}
+.box::before{left:-6%;transform:skewX(-18deg);border-radius:6px 6px 0 0}
+.box::after{right:-6%;transform:skewX(18deg);border-radius:6px 6px 0 0}
+.box .tape{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);font-family:"Baloo 2",sans-serif;font-weight:800;color:var(--ink);opacity:.8;font-size:18px;white-space:nowrap}
+.items{position:absolute;top:-58px;left:0;right:0;display:flex;justify-content:center;gap:6px;z-index:2}
+.items span{font-size:40px;display:inline-block;animation:pop .45s cubic-bezier(.3,1.6,.5,1) both}
+.items span:nth-child(2){animation-delay:.06s}.items span:nth-child(3){animation-delay:.12s}.items span:nth-child(4){animation-delay:.18s}
+@keyframes pop{from{transform:translateY(30px) scale(.4);opacity:0}to{transform:none;opacity:1}}
+.summary{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;border-top:2px dashed var(--line);padding-top:16px;margin-top:10px;flex-wrap:wrap}
+.price{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:34px;line-height:1}
+.price small{font-family:Figtree,sans-serif;font-size:15px;font-weight:500;color:var(--muted)}
+.price-note{font-size:14px;color:var(--muted);margin-top:4px}
+
+/* sections */
+section.block{padding:56px 0}
+section.block h2{font-size:clamp(30px,4vw,42px);margin-bottom:8px}
+section.block .sub{color:var(--muted);margin:0 0 28px;max-width:36em}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media (max-width:820px){.plans{grid-template-columns:1fr}}
+.plan{background:var(--surface);border:2px solid var(--line);border-radius:22px;padding:22px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:6px}
+.plan[aria-pressed="true"]{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand) inset}
+.plan h3{font-size:24px}
+.plan .pp{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:32px}
+.plan .pp small{font-family:Figtree,sans-serif;font-size:14px;font-weight:500;color:var(--muted)}
+.plan .desc{color:var(--muted);font-size:15px}
+.plan .save{align-self:flex-start;background:var(--accent);color:#2A0B0F;font-weight:700;font-size:13px;padding:3px 10px;border-radius:999px}
+
+.month{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media (max-width:820px){.month{grid-template-columns:repeat(2,1fr)}}
+.mitem{background:var(--surface);border-radius:20px;padding:18px;border:1px solid var(--line)}
+.mitem .em{font-size:42px}
+.mitem h3{font-size:19px;margin:6px 0 2px}
+.mitem p{margin:0;color:var(--muted);font-size:14px}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;counter-reset:s}
+@media (max-width:820px){.steps{grid-template-columns:1fr}}
+.step{position:relative;padding-left:62px}
+.step::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:0;width:46px;height:46px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:22px}
+.step h3{font-size:22px}
+.step p{color:var(--muted);margin:4px 0 0}
+
+/* account */
+.account{background:var(--surface);border:2px solid var(--ink);border-radius:28px;padding:28px}
+.empty{text-align:center;padding:24px 8px}
+.empty .em{font-size:56px}
+.empty p{color:var(--muted);margin:8px 0 18px}
+.acc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.status{display:inline-block;font-weight:700;font-size:14px;padding:4px 12px;border-radius:999px;margin-left:8px;vertical-align:middle}
+.st-ativa{background:var(--brand);color:var(--brand-ink)}
+.st-pausada{background:var(--warn);color:#1D1406}
+.st-cancelada{background:var(--danger);color:#fff}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin:22px 0}
+.fact{background:var(--surface2);border-radius:16px;padding:14px 16px}
+.fact .k{font-size:13px;color:var(--muted);font-weight:600}
+.fact .v{font-weight:700;font-size:17px}
+.track{margin:8px 0 22px}
+.track h3{font-size:20px;margin-bottom:12px}
+.tl{display:flex;list-style:none;padding:0;margin:0}
+.tl li{flex:1;position:relative;text-align:center;font-size:14px;color:var(--muted);font-weight:600;padding-top:34px}
+.tl li::before{content:"";position:absolute;top:8px;left:50%;transform:translateX(-50%);width:20px;height:20px;border-radius:50%;background:var(--surface);border:3px solid var(--line);z-index:1}
+.tl li::after{content:"";position:absolute;top:16px;left:-50%;width:100%;height:4px;background:var(--line)}
+.tl li:first-child::after{display:none}
+.tl li.done{color:var(--ink)}
+.tl li.done::before{background:var(--brand);border-color:var(--brand)}
+.tl li.done::after{background:var(--brand)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.actions select{border:2px solid var(--line);background:var(--surface2);border-radius:999px;padding:8px 14px;font-weight:600}
+.log{margin-top:18px;font-size:14px;color:var(--muted);max-height:120px;overflow:auto}
+
+/* modal */
+dialog{border:2px solid var(--ink);border-radius:26px;padding:0;width:min(520px,calc(100% - 24px));background:var(--surface);color:var(--ink)}
+dialog::backdrop{background:rgba(10,20,14,.55)}
+.mbody{padding:24px}
+.mbody h2{font-size:28px;margin-bottom:4px}
+.mbody .recap{color:var(--muted);margin:0 0 14px;font-size:15px}
+.in{display:block;width:100%;border:2px solid var(--line);background:var(--surface2);border-radius:14px;padding:11px 14px;margin-top:6px}
+.in:focus{border-color:var(--brand);outline:none}
+label.f{display:block;font-weight:600;font-size:14px;margin:12px 0 0}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hint{font-size:13px;color:var(--muted);margin-top:4px;min-height:1.2em}
+.hint.ok{color:var(--brand)} .hint.err{color:var(--danger)}
+.totals{background:var(--surface2);border-radius:16px;padding:12px 16px;margin:16px 0;font-size:15px}
+.totals div{display:flex;justify-content:space-between;padding:2px 0}
+.totals .grand{font-weight:800;font-size:18px;border-top:1px solid var(--line);margin-top:6px;padding-top:8px}
+.mfoot{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.pix{display:none;text-align:center;padding:10px 0}
+.pix .qr{width:140px;height:140px;margin:0 auto 8px;background:
+  conic-gradient(var(--ink) 25%,transparent 0 50%,var(--ink) 0 75%,transparent 0) 0 0/20px 20px;border:8px solid var(--surface);outline:2px solid var(--ink);border-radius:8px}
+
+/* categorias do hero e clube */
+.cats{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cat{display:flex;flex-direction:column;align-items:flex-start;gap:6px;background:var(--surface);border:2px solid var(--ink);border-radius:24px;padding:22px;box-shadow:6px 6px 0 var(--ink);cursor:pointer;text-align:left;font-family:"Baloo 2",sans-serif;font-weight:700;font-size:24px;transition:transform .15s,box-shadow .15s}
+.cat:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}
+.cat .em{font-size:48px;line-height:1}
+.cat small{font-family:Figtree,sans-serif;font-size:14px;font-weight:500;color:var(--muted)}
+.clube{border-top:2px dashed var(--line)}
+.clube .hero{padding:0}
+.clube .hero h2{font-size:clamp(34px,5vw,52px);margin-bottom:0}
+
+/* compra programada */
+.progtag{font-size:13px;font-weight:600;color:var(--brand)}
+.freq{margin-top:6px;border:2px solid var(--line);background:var(--surface2);border-radius:999px;padding:4px 10px;font-size:13px;font-weight:600;max-width:100%}
+.prog-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.prog-actions .freq{margin-top:0;padding:7px 12px;font-size:14px}
+
+/* loja */
+.store-bar{display:flex;flex-wrap:wrap;gap:16px 28px;margin-bottom:24px}
+.store-bar .field{margin:0}
+.products{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+.prod{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.prod .pic{background:var(--surface2);border-radius:14px;height:120px;display:grid;place-items:center;font-size:56px}
+.prod .meta{font-size:13px;color:var(--muted);font-weight:600}
+.prod h3{font-size:19px}
+.prod .bottom{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:auto;padding-top:8px}
+.prod .pr{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:22px}
+.store-empty{color:var(--muted);padding:20px 0}
+.cart-btn{border:2px solid var(--line);background:var(--surface2);border-radius:999px;padding:6px 12px;font-weight:700;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+.cart-btn:hover{border-color:var(--ink)}
+.cart-btn .n{background:var(--brand);color:var(--brand-ink);border-radius:999px;min-width:22px;height:22px;display:grid;place-items:center;font-size:13px;padding:0 6px}
+dialog{max-height:90vh;overflow:auto}
+.cline{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.cline .em{font-size:30px}
+.cline .nm{font-weight:600;font-size:15px}
+.cline .sm{font-size:13px;color:var(--muted)}
+.qty{display:inline-flex;align-items:center;gap:8px;font-weight:700}
+.qty button{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);background:var(--surface2);cursor:pointer;font-weight:700}
+.linkbtn{background:none;border:0;color:var(--danger);cursor:pointer;font-size:13px;padding:0;font-weight:600}
+.orders-wrap{margin-top:32px}
+.orders-wrap h3{font-size:24px}
+.order{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px;margin-top:12px}
+.ohead{display:flex;justify-content:space-between;gap:12px;font-weight:700;flex-wrap:wrap}
+.oitems{color:var(--muted);font-size:14px;margin:4px 0 6px}
+.order .tl{margin-bottom:14px}
+
+footer{padding:36px 0 48px;color:var(--muted);font-size:14px;text-align:center}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(120%);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:999px;font-weight:600;transition:transform .3s;z-index:20;max-width:calc(100% - 32px);text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="logo" href="#topo" aria-label="Ciclo Box, início">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="var(--brand)"/><g fill="var(--brand-ink)"><ellipse cx="16" cy="20" rx="6" ry="5"/><circle cx="9.5" cy="13" r="2.4"/><circle cx="13.5" cy="9.5" r="2.4"/><circle cx="18.5" cy="9.5" r="2.4"/><circle cx="22.5" cy="13" r="2.4"/></g></svg>
+      Ciclo Box
+    </a>
+    <span class="badge-demo">demo</span>
+    <div class="spacer"></div>
+    <nav class="links" aria-label="Principal">
+      <a class="link" href="#loja">Loja</a>
+      <a class="link" href="#clube">Clube Ciclo Box</a>
+      <a class="link" href="#conta">Minha conta</a>
+    </nav>
+    <button class="cart-btn" id="cartBtn" type="button" aria-label="Abrir carrinho">🛒 <span class="n" id="cartCount">0</span></button>
+  </div>
+</header>
+
+<main id="topo">
+  <div class="wrap hero">
+    <div>
+      <h1>Tudo pro seu pet, entregue em casa.</h1>
+      <p class="lead">Petiscos, brinquedos, higiene e acessórios pra cães e gatos. E, se quiser, uma caixa surpresa todo mês com o Clube Ciclo Box.</p>
+      <a class="btn btn-primary" href="#loja">Ver produtos</a>
+      <a class="btn btn-ghost" href="#clube" style="margin-left:8px">Conhecer o Clube</a>
+      <ul class="ticks">
+        <li>Entrega em até 5 dias úteis</li>
+        <li>Pix, cartão ou boleto</li>
+        <li>Troca fácil em até 30 dias</li>
+      </ul>
+    </div>
+    <div class="cats" id="heroCats">
+      <button type="button" class="cat" data-cat="Alimentação"><span class="em" aria-hidden="true">🍖</span>Alimentação<small>Ração com entrega programada</small></button>
+      <button type="button" class="cat" data-cat="Brinquedos"><span class="em" aria-hidden="true">🎾</span>Brinquedos<small>Pra gastar energia</small></button>
+      <button type="button" class="cat" data-cat="Higiene"><span class="em" aria-hidden="true">🧴</span>Higiene<small>Banho e escovação</small></button>
+      <button type="button" class="cat" data-cat="Acessórios"><span class="em" aria-hidden="true">🥣</span>Acessórios<small>Caminhas, guias e mais</small></button>
+    </div>
+  </div>
+
+  <section class="block" id="loja">
+    <div class="wrap">
+      <h2>Loja</h2>
+      <p class="sub">Compre o que precisar, quando precisar. Itens como ração e areia podem virar compra programada com 5% off, é só escolher a frequência no carrinho. Membros do Clube têm mais 10% de desconto e frete grátis acima de R$ 150.</p>
+      <div class="store-bar">
+        <div class="field">
+          <div class="field-label">Pet</div>
+          <div class="seg" id="fPet">
+            <button type="button" data-v="todos" aria-pressed="true">Todos</button>
+            <button type="button" data-v="cao" aria-pressed="false">🐶 Cão</button>
+            <button type="button" data-v="gato" aria-pressed="false">🐱 Gato</button>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-label">Categoria</div>
+          <div class="seg" id="fCat">
+            <button type="button" data-v="todas" aria-pressed="true">Todas</button>
+            <button type="button" data-v="Alimentação" aria-pressed="false">Alimentação</button>
+            <button type="button" data-v="Petiscos" aria-pressed="false">Petiscos</button>
+            <button type="button" data-v="Brinquedos" aria-pressed="false">Brinquedos</button>
+            <button type="button" data-v="Higiene" aria-pressed="false">Higiene</button>
+            <button type="button" data-v="Acessórios" aria-pressed="false">Acessórios</button>
+          </div>
+        </div>
+      </div>
+      <div class="products" id="prodGrid"></div>
+    </div>
+  </section>
+
+  <section class="block clube" id="clube">
+  <div class="wrap hero">
+    <div>
+      <h2>Clube Ciclo Box</h2>
+      <p class="lead">Um plus pra quem quer mimar o pet todo mês: uma caixa surpresa com petiscos, brinquedos e cuidados escolhidos pro porte dele.</p>
+      <ul class="ticks">
+        <li>Sem fidelidade no plano mensal</li>
+        <li>Frete grátis no plano anual</li>
+        <li>10% off em tudo da loja enquanto for membro</li>
+      </ul>
+    </div>
+
+    <div class="builder" id="montar">
+      <h2>Monte a caixa</h2>
+      <div class="field">
+        <div class="field-label">Seu pet é</div>
+        <div class="seg" id="segPet">
+          <button type="button" data-v="cao" aria-pressed="true">🐶 Cão</button>
+          <button type="button" data-v="gato" aria-pressed="false">🐱 Gato</button>
+        </div>
+      </div>
+      <div class="field" id="fieldPorte">
+        <div class="field-label">Porte</div>
+        <div class="seg" id="segPorte">
+          <button type="button" data-v="pequeno" aria-pressed="true">Pequeno</button>
+          <button type="button" data-v="medio" aria-pressed="false">Médio</button>
+          <button type="button" data-v="grande" aria-pressed="false">Grande</button>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label">Plano</div>
+        <div class="seg" id="segPlano">
+          <button type="button" data-v="mensal" aria-pressed="true">Mensal</button>
+          <button type="button" data-v="trimestral" aria-pressed="false">Trimestral</button>
+          <button type="button" data-v="anual" aria-pressed="false">Anual</button>
+        </div>
+      </div>
+      <div class="box-stage">
+        <div class="box" aria-hidden="true">
+          <div class="items" id="boxItems"></div>
+          <div class="tape">ciclo box</div>
+        </div>
+      </div>
+      <div class="summary">
+        <div>
+          <div class="price" id="bPrice">R$ 89,90 <small>/mês</small></div>
+          <div class="price-note" id="bNote">Cobrado todo mês</div>
+        </div>
+        <button class="btn btn-primary" id="btnAssinar" type="button">Assinar agora</button>
+      </div>
+    </div>
+  </div>
+  </section>
+
+  <section class="block" id="planos">
+    <div class="wrap">
+      <h2>Planos</h2>
+      <p class="sub">Quanto mais tempo de assinatura, menor o valor da caixa. Dá pra trocar de plano depois.</p>
+      <div class="plans" id="plansGrid"></div>
+    </div>
+  </section>
+
+  <section class="block" id="caixa">
+    <div class="wrap">
+      <h2 id="caixaTitle">Na caixa deste mês</h2>
+      <p class="sub" id="caixaSub">Tema de novembro: piquenique no parque.</p>
+      <div class="month" id="monthGrid"></div>
+    </div>
+  </section>
+
+  <section class="block" id="como">
+    <div class="wrap">
+      <h2>Como funciona</h2>
+      <p class="sub">Três passos e o resto fica com a gente.</p>
+      <div class="steps">
+        <div class="step"><h3>Monte a caixa</h3><p>Conta se é cão ou gato, o porte e escolhe o plano.</p></div>
+        <div class="step"><h3>Receba em casa</h3><p>A caixa é enviada todo começo de mês e você acompanha a entrega por aqui.</p></div>
+        <div class="step"><h3>Ajuste quando quiser</h3><p>Pause, pule um mês, troque de plano ou cancele direto na sua conta.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="conta">
+    <div class="wrap">
+      <h2>Minha conta</h2>
+      <p class="sub">Área do cliente para gerenciar a assinatura e acompanhar os pedidos.</p>
+      <div class="account" id="account"></div>
+      <div class="orders-wrap">
+        <h3>Pedidos da loja</h3>
+        <div id="orders"></div>
+        <h3 style="margin-top:28px">Compras programadas</h3>
+        <div id="progs"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>Ciclo Box é um projeto acadêmico de Engenharia de Software. Pagamentos e entregas são simulados.</footer>
+
+<dialog id="checkout" aria-labelledby="ckTitle">
+  <form method="dialog" class="mbody" id="ckForm" novalidate>
+    <h2 id="ckTitle">Finalizar assinatura</h2>
+    <p class="recap" id="ckRecap"></p>
+    <label class="f">Nome
+      <input class="in" id="ckNome" autocomplete="name" placeholder="Seu nome">
+    </label>
+    <label class="f">E-mail
+      <input class="in" id="ckEmail" type="email" autocomplete="email" placeholder="voce@email.com">
+    </label>
+    <div class="row">
+      <label class="f">CEP
+        <input class="in" id="ckCep" inputmode="numeric" placeholder="00000-000" maxlength="9">
+        <div class="hint" id="cepHint"></div>
+      </label>
+      <label class="f">Cupom
+        <input class="in" id="ckCupom" placeholder="Ex.: PRIMEIRA10">
+        <div class="hint" id="cupomHint"></div>
+      </label>
+    </div>
+    <div class="field">
+      <div class="field-label">Pagamento</div>
+      <div class="seg" id="segPag">
+        <button type="button" data-v="pix" aria-pressed="true">Pix</button>
+        <button type="button" data-v="cartao" aria-pressed="false">Cartão de crédito</button>
+      </div>
+    </div>
+    <div id="cardFields" hidden>
+      <label class="f">Número do cartão
+        <input class="in" id="ckCard" inputmode="numeric" placeholder="0000 0000 0000 0000" maxlength="19">
+      </label>
+    </div>
+    <div class="totals" id="ckTotals"></div>
+    <div class="pix" id="pixBox"><div class="qr" aria-hidden="true"></div><div>Escaneie o QR Code (simulado)</div></div>
+    <div class="hint err" id="ckErr"></div>
+    <div class="mfoot">
+      <button class="btn btn-ghost" type="button" id="ckCancel">Voltar</button>
+      <button class="btn btn-primary" type="button" id="ckConfirm">Confirmar assinatura</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="cart" aria-labelledby="cartTitle">
+  <div class="mbody">
+    <h2 id="cartTitle">Seu carrinho</h2>
+    <div id="cartLines"></div>
+    <div id="cartRest">
+      <div class="row">
+        <label class="f">CEP
+          <input class="in" id="cCep" inputmode="numeric" placeholder="00000-000" maxlength="9">
+          <div class="hint" id="cCepHint"></div>
+        </label>
+        <label class="f">Pagamento
+          <select class="in" id="cPag">
+            <option>Pix</option>
+            <option>Cartão de crédito</option>
+            <option>Boleto</option>
+          </select>
+        </label>
+      </div>
+      <div class="totals" id="cTotals"></div>
+      <div class="hint err" id="cErr"></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-ghost" type="button" id="cClose">Continuar comprando</button>
+      <button class="btn btn-primary" type="button" id="cFinish">Finalizar compra</button>
+    </div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const PLANS = {
+  mensal:{nome:"Mensal",preco:89.90,meses:1,nota:"Cobrado todo mês",desc:"Sem fidelidade. Cancele quando quiser."},
+  trimestral:{nome:"Trimestral",preco:79.90,meses:3,nota:"Cobrado a cada 3 meses",desc:"Renova a cada três caixas.",save:"Economize 11%"},
+  anual:{nome:"Anual",preco:69.90,meses:12,nota:"Cobrado uma vez por ano",desc:"Doze caixas com frete grátis.",save:"Economize 22%"}
+};
+const PORTE_ADD = {pequeno:0, medio:5, grande:10};
+const ITEMS = {
+  cao:[
+    {em:"🦴",n:"Ossinho de frango",d:"Petisco natural desidratado"},
+    {em:"🎾",n:"Bolinha que quica torto",d:"Pra correr atrás no parque"},
+    {em:"🧺",n:"Mordedor cesta",d:"Corda trançada resistente"},
+    {em:"🧴",n:"Colônia suave",d:"Cheirinho de grama cortada"}
+  ],
+  gato:[
+    {em:"🐟",n:"Snack de salmão",d:"Petisco crocante sem corante"},
+    {em:"🧶",n:"Novelo com guizo",d:"Pra caçar no tapete"},
+    {em:"🐭",n:"Ratinho com catnip",d:"Recheado com erva-do-gato"},
+    {em:"🪮",n:"Escovinha de silicone",d:"Ajuda a tirar o pelo solto"}
+  ]
+};
+const STAGES = ["Pago","Separando","Enviado","Entregue"];
+
+const state = {pet:"cao", porte:"pequeno", plano:"mensal", pag:"pix", sub:null};
+const $ = id => document.getElementById(id);
+const brl = v => v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+
+function unitPrice(plano = state.plano, pet = state.pet, porte = state.porte){
+  return PLANS[plano].preco + (pet === "cao" ? PORTE_ADD[porte] : 0);
+}
+
+function setSeg(el, v){
+  el.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v ? "true" : "false"));
+}
+function bindSeg(el, fn){
+  el.addEventListener("click", e => {
+    const b = e.target.closest("button[data-v]"); if(!b) return;
+    setSeg(el, b.dataset.v); fn(b.dataset.v);
+  });
+}
+
+function renderBuilder(){
+  $("fieldPorte").hidden = state.pet !== "cao";
+  $("boxItems").innerHTML = ITEMS[state.pet].map(i => `<span>${i.em}</span>`).join("");
+  $("bPrice").innerHTML = `${brl(unitPrice())} <small>/mês</small>`;
+  $("bNote").textContent = PLANS[state.plano].nota;
+  setSeg($("segPlano"), state.plano);
+  renderPlans(); renderMonth();
+}
+
+function renderPlans(){
+  $("plansGrid").innerHTML = Object.entries(PLANS).map(([k,p]) => `
+    <button type="button" class="plan" data-v="${k}" aria-pressed="${state.plano===k}">
+      ${p.save ? `<span class="save">${p.save}</span>` : ""}
+      <h3>${p.nome}</h3>
+      <div class="pp">${brl(unitPrice(k))} <small>/mês</small></div>
+      <div class="desc">${p.desc}</div>
+      <div class="desc">${p.nota}</div>
+    </button>`).join("");
+}
+
+function renderMonth(){
+  $("caixaTitle").textContent = state.pet === "cao" ? "Na caixa deste mês, versão cão" : "Na caixa deste mês, versão gato";
+  $("monthGrid").innerHTML = ITEMS[state.pet].map(i => `
+    <div class="mitem"><div class="em" aria-hidden="true">${i.em}</div><h3>${i.n}</h3><p>${i.d}</p></div>`).join("");
+}
+
+/* checkout */
+let cupomOk = false;
+function freteValor(){
+  const cep = $("ckCep").value.replace(/\D/g,"");
+  if(cep.length !== 8) return null;
+  return state.plano === "anual" ? 0 : 9.90;
+}
+function renderTotals(){
+  const p = PLANS[state.plano];
+  const sub = unitPrice() * p.meses;
+  const frete = freteValor();
+  const desc = cupomOk ? unitPrice() * 0.10 : 0;
+  const total = sub - desc + (frete || 0) * p.meses;
+  $("ckTotals").innerHTML = `
+    <div><span>${p.nome} (${p.meses} ${p.meses>1?"caixas":"caixa"})</span><span>${brl(sub)}</span></div>
+    <div><span>Frete</span><span>${frete===null ? "Informe o CEP" : frete===0 ? "Grátis" : brl(frete*p.meses)}</span></div>
+    ${cupomOk ? `<div><span>Cupom PRIMEIRA10</span><span>− ${brl(desc)}</span></div>` : ""}
+    <div class="grand"><span>Total agora</span><span>${brl(total)}</span></div>`;
+  return total;
+}
+function openCheckout(){
+  const pet = state.pet === "cao" ? `cão de porte ${state.porte === "medio" ? "médio" : state.porte}` : "gato";
+  $("ckRecap").textContent = `Caixa para ${pet}, plano ${PLANS[state.plano].nome.toLowerCase()}.`;
+  $("ckErr").textContent = "";
+  renderTotals();
+  $("checkout").showModal();
+}
+$("btnAssinar").onclick = openCheckout;
+$("ckCancel").onclick = () => $("checkout").close();
+
+$("ckCep").addEventListener("input", e => {
+  let v = e.target.value.replace(/\D/g,"").slice(0,8);
+  if(v.length > 5) v = v.slice(0,5) + "-" + v.slice(5);
+  e.target.value = v;
+  const f = freteValor(), h = $("cepHint");
+  if(f === null){ h.textContent = v.length ? "CEP com 8 dígitos" : ""; h.className = "hint"; }
+  else { h.textContent = f === 0 ? "Frete grátis no anual" : "Entrega em até 5 dias úteis"; h.className = "hint ok"; }
+  renderTotals();
+});
+$("ckCupom").addEventListener("input", e => {
+  const v = e.target.value.trim().toUpperCase(), h = $("cupomHint");
+  cupomOk = v === "PRIMEIRA10";
+  if(!v){ h.textContent=""; h.className="hint"; }
+  else if(cupomOk){ h.textContent="10% off na primeira caixa"; h.className="hint ok"; }
+  else { h.textContent="Cupom não encontrado"; h.className="hint err"; }
+  renderTotals();
+});
+bindSeg($("segPag"), v => {
+  state.pag = v;
+  $("cardFields").hidden = v !== "cartao";
+  $("pixBox").style.display = v === "pix" ? "block" : "none";
+});
+$("pixBox").style.display = "block";
+$("ckCard").addEventListener("input", e => {
+  e.target.value = e.target.value.replace(/\D/g,"").slice(0,16).replace(/(\d{4})(?=\d)/g,"$1 ");
+});
+
+$("ckConfirm").onclick = () => {
+  const nome = $("ckNome").value.trim(), email = $("ckEmail").value.trim();
+  let err = "";
+  if(!nome) err = "Preencha seu nome.";
+  else if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) err = "Informe um e-mail válido.";
+  else if(freteValor() === null) err = "Informe um CEP com 8 dígitos para calcular o frete.";
+  else if(state.pag === "cartao" && $("ckCard").value.replace(/\D/g,"").length !== 16) err = "O número do cartão precisa ter 16 dígitos.";
+  if(err){ $("ckErr").textContent = err; return; }
+  const total = renderTotals();
+  const prox = new Date(); prox.setMonth(prox.getMonth()+1, 5);
+  state.sub = {
+    nome: nome.split(" ")[0], pet: state.pet, porte: state.porte, plano: state.plano,
+    status:"ativa", stage:0, prox, pago: total, log:[`Assinatura criada no plano ${PLANS[state.plano].nome.toLowerCase()} (${brl(total)}).`]
+  };
+  $("checkout").close();
+  renderAccount();
+  toast("Assinatura confirmada!");
+  document.getElementById("conta").scrollIntoView();
+};
+
+/* account */
+function fmtData(d){ return d.toLocaleDateString("pt-BR",{day:"2-digit",month:"long"}); }
+function renderAccount(){
+  const a = $("account"), s = state.sub;
+  if(!s){
+    a.innerHTML = `<div class="empty"><div class="em" aria-hidden="true">📦</div>
+      <h3>Nenhuma assinatura ainda</h3>
+      <p>Monte sua caixa e finalize o pedido para ver aqui o status da entrega e as opções da assinatura.</p>
+      <a class="btn btn-primary" href="#montar">Montar minha caixa</a></div>`;
+    return;
+  }
+  const label = {ativa:"Ativa",pausada:"Pausada",cancelada:"Cancelada"}[s.status];
+  const petTxt = s.pet === "cao" ? `Cão, porte ${s.porte === "medio" ? "médio" : s.porte}` : "Gato";
+  const off = s.status === "cancelada";
+  a.innerHTML = `
+    <div class="acc-head">
+      <h3 style="font-size:28px">Oi, ${esc(s.nome)}! <span class="status st-${s.status}">${label}</span></h3>
+    </div>
+    <div class="facts">
+      <div class="fact"><div class="k">Plano</div><div class="v">${PLANS[s.plano].nome}</div></div>
+      <div class="fact"><div class="k">Pet</div><div class="v">${petTxt}</div></div>
+      <div class="fact"><div class="k">Valor por caixa</div><div class="v">${brl(unitPrice(s.plano,s.pet,s.porte))}</div></div>
+      <div class="fact"><div class="k">Próxima caixa</div><div class="v">${s.status==="ativa" ? fmtData(s.prox) : s.status==="pausada" ? "Pausada" : "Nenhuma"}</div></div>
+    </div>
+    <div class="track">
+      <h3>Pedido atual</h3>
+      <ol class="tl">${STAGES.map((st,i)=>`<li class="${i<=s.stage?"done":""}">${st}</li>`).join("")}</ol>
+    </div>
+    <div class="actions">
+      <button class="btn btn-ghost btn-sm" id="aAvancar" ${s.stage>=3?"disabled":""}>Avançar status do pedido</button>
+      ${off ? "" : `
+      <button class="btn btn-ghost btn-sm" id="aPausar">${s.status==="pausada"?"Retomar assinatura":"Pausar assinatura"}</button>
+      <button class="btn btn-ghost btn-sm" id="aPular" ${s.status!=="ativa"?"disabled":""}>Pular próxima caixa</button>
+      <select id="aPlano" aria-label="Trocar plano">${Object.entries(PLANS).map(([k,p])=>`<option value="${k}" ${k===s.plano?"selected":""}>Plano ${p.nome.toLowerCase()}</option>`).join("")}</select>
+      <button class="btn btn-danger btn-sm" id="aCancelar">Cancelar assinatura</button>`}
+      ${off ? `<a class="btn btn-primary btn-sm" href="#montar">Assinar de novo</a>` : ""}
+    </div>
+    <div class="log" aria-label="Histórico">${s.log.slice().reverse().map(l=>`<div>• ${esc(l)}</div>`).join("")}</div>`;
+
+  $("aAvancar").onclick = () => { s.stage++; s.log.push(`Pedido: ${STAGES[s.stage]}.`); renderAccount(); toast(`Pedido ${STAGES[s.stage].toLowerCase()}`); };
+  if(off) return;
+  $("aPausar").onclick = () => {
+    s.status = s.status === "pausada" ? "ativa" : "pausada";
+    s.log.push(s.status === "pausada" ? "Assinatura pausada." : "Assinatura retomada.");
+    renderAccount(); toast(s.status === "pausada" ? "Assinatura pausada" : "Assinatura retomada");
+  };
+  $("aPular").onclick = () => {
+    s.prox = new Date(s.prox); s.prox.setMonth(s.prox.getMonth()+1);
+    s.log.push(`Caixa pulada. Próxima em ${fmtData(s.prox)}.`);
+    renderAccount(); toast("Próxima caixa pulada");
+  };
+  $("aPlano").onchange = e => {
+    s.plano = e.target.value;
+    s.log.push(`Plano alterado para ${PLANS[s.plano].nome.toLowerCase()}, vale a partir da próxima cobrança.`);
+    renderAccount(); toast("Plano alterado");
+  };
+  $("aCancelar").onclick = () => {
+    if(!confirm("Cancelar a assinatura? A caixa já paga ainda será entregue.")) return;
+    s.status = "cancelada"; s.log.push("Assinatura cancelada.");
+    renderAccount(); toast("Assinatura cancelada");
+  };
+}
+function esc(t){ return String(t).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+let tt;
+function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("show"),2200); }
+
+/* loja */
+const PRODUCTS = [
+  {id:"p13",em:"🍖",n:"Ração cães adultos 10 kg",cat:"Alimentação",pet:"cao",p:189.90,prog:true},
+  {id:"p14",em:"🥫",n:"Ração gatos castrados 3 kg",cat:"Alimentação",pet:"gato",p:99.90,prog:true},
+  {id:"p15",em:"🪣",n:"Areia sanitária 4 kg",cat:"Higiene",pet:"gato",p:29.90,prog:true},
+  {id:"p16",em:"🧻",n:"Tapete higiênico 30 un.",cat:"Higiene",pet:"cao",p:54.90,prog:true},
+  {id:"p1",em:"🦴",n:"Ossinho de frango 200 g",cat:"Petiscos",pet:"cao",p:24.90,prog:true},
+  {id:"p2",em:"🥩",n:"Bifinho de carne 500 g",cat:"Petiscos",pet:"cao",p:32.90},
+  {id:"p3",em:"🐟",n:"Snack de salmão 80 g",cat:"Petiscos",pet:"gato",p:18.90,prog:true},
+  {id:"p4",em:"🎾",n:"Kit com 3 bolinhas",cat:"Brinquedos",pet:"cao",p:29.90},
+  {id:"p5",em:"🐭",n:"Ratinho com catnip",cat:"Brinquedos",pet:"gato",p:15.90},
+  {id:"p6",em:"🪶",n:"Varinha de penas",cat:"Brinquedos",pet:"gato",p:22.90},
+  {id:"p7",em:"🧴",n:"Shampoo neutro 500 ml",cat:"Higiene",pet:"ambos",p:34.90},
+  {id:"p8",em:"🪮",n:"Escova de silicone",cat:"Higiene",pet:"ambos",p:27.90},
+  {id:"p9",em:"🥣",n:"Comedouro de inox",cat:"Acessórios",pet:"ambos",p:39.90},
+  {id:"p10",em:"🦮",n:"Guia retrátil 5 m",cat:"Acessórios",pet:"cao",p:69.90},
+  {id:"p11",em:"📦",n:"Arranhador de papelão",cat:"Acessórios",pet:"gato",p:49.90},
+  {id:"p12",em:"🛏️",n:"Caminha redonda",cat:"Acessórios",pet:"ambos",p:119.90}
+];
+const PET_LABEL = {cao:"Cão",gato:"Gato",ambos:"Cão e gato"};
+const loja = {pet:"todos",cat:"todas"};
+const cart = {};
+const orders = [];
+let orderSeq = 1001;
+const prodById = id => PRODUCTS.find(p => p.id === id);
+const isAssinante = () => !!(state.sub && state.sub.status !== "cancelada");
+
+function renderStore(){
+  const list = PRODUCTS.filter(p =>
+    (loja.pet === "todos" || p.pet === loja.pet || p.pet === "ambos") &&
+    (loja.cat === "todas" || p.cat === loja.cat));
+  $("prodGrid").innerHTML = list.length ? list.map(p => `
+    <div class="prod">
+      <div class="pic" aria-hidden="true">${p.em}</div>
+      <div class="meta">${p.cat}, ${PET_LABEL[p.pet]}</div>
+      <h3>${p.n}</h3>
+      ${p.prog ? `<div class="progtag">🔁 Compra programada com 5% off</div>` : ""}
+      <div class="bottom">
+        <span class="pr">${brl(p.p)}</span>
+        <button class="btn btn-primary btn-sm" type="button" data-add="${p.id}">Adicionar</button>
+      </div>
+    </div>`).join("") : `<div class="store-empty">Nenhum produto com esses filtros. Tente outra categoria.</div>`;
+}
+function updateCartBtn(){
+  $("cartCount").textContent = Object.values(cart).reduce((a,b)=>a+b,0);
+}
+function cartFrete(liquido){
+  const cep = $("cCep").value.replace(/\D/g,"");
+  if(cep.length !== 8) return null;
+  return (isAssinante() && liquido >= 150) ? 0 : 14.90;
+}
+function renderCart(){
+  const ids = Object.keys(cart);
+  $("cartRest").hidden = !ids.length;
+  $("cFinish").disabled = !ids.length;
+  if(!ids.length){
+    $("cartLines").innerHTML = `<p class="recap">Seu carrinho está vazio. Adicione produtos na loja.</p>`;
+    return 0;
+  }
+  $("cartLines").innerHTML = ids.map(id => {
+    const p = prodById(id), q = cart[id];
+    return `<div class="cline">
+      <div class="em" aria-hidden="true">${p.em}</div>
+      <div><div class="nm">${p.n}</div><div class="sm">${brl(p.p)} cada <button class="linkbtn" data-act="rm" data-id="${id}">Remover</button></div>${p.prog ? freqSelect(id) : ""}</div>
+      <div class="qty"><button data-act="dec" data-id="${id}" aria-label="Diminuir">−</button>${q}<button data-act="inc" data-id="${id}" aria-label="Aumentar">+</button></div>
+    </div>`;
+  }).join("");
+  const sub = ids.reduce((s,id)=> s + prodById(id).p * cart[id], 0);
+  const descProg = ids.reduce((s,id)=> s + (cartFreq[id] ? prodById(id).p * cart[id] * 0.05 : 0), 0);
+  const descClube = isAssinante() ? (sub - descProg) * 0.10 : 0;
+  const desc = descProg + descClube;
+  const frete = cartFrete(sub - desc);
+  const total = sub - desc + (frete || 0);
+  $("cTotals").innerHTML = `
+    <div><span>Subtotal</span><span>${brl(sub)}</span></div>
+    ${descProg ? `<div><span>Compra programada (5%)</span><span>− ${brl(descProg)}</span></div>` : ""}
+    ${descClube ? `<div><span>Desconto do Clube (10%)</span><span>− ${brl(descClube)}</span></div>` : ""}
+    <div><span>Frete</span><span>${frete===null ? "Informe o CEP" : frete===0 ? "Grátis" : brl(frete)}</span></div>
+    <div class="grand"><span>Total</span><span>${brl(total)}</span></div>`;
+  return total;
+}
+function openCart(){ $("cErr").textContent = ""; renderCart(); $("cart").showModal(); }
+
+function renderOrders(){
+  const el = $("orders");
+  if(!orders.length){
+    el.innerHTML = `<p class="sub" style="margin-top:8px">Nenhum pedido avulso ainda. Os pedidos feitos na loja aparecem aqui.</p>`;
+    return;
+  }
+  el.innerHTML = orders.slice().reverse().map(o => `
+    <div class="order">
+      <div class="ohead"><span>Pedido #${o.num}</span><span>${brl(o.total)}</span></div>
+      <div class="oitems">${o.items.map(i => `${i.q}× ${i.n}`).join(", ")}. Pagamento: ${o.pag}.</div>
+      <ol class="tl">${STAGES.map((st,i)=>`<li class="${i<=o.stage?"done":""}">${st}</li>`).join("")}</ol>
+      <button class="btn btn-ghost btn-sm" data-adv="${o.num}" ${o.stage>=3?"disabled":""}>Avançar status do pedido</button>
+    </div>`).join("");
+}
+
+$("prodGrid").addEventListener("click", e => {
+  const b = e.target.closest("[data-add]"); if(!b) return;
+  cart[b.dataset.add] = (cart[b.dataset.add] || 0) + 1;
+  updateCartBtn(); toast(`${prodById(b.dataset.add).n} adicionado ao carrinho`);
+});
+$("cartLines").addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if(!b) return;
+  const id = b.dataset.id;
+  if(b.dataset.act === "inc") cart[id]++;
+  if(b.dataset.act === "dec") cart[id]--;
+  if(b.dataset.act === "rm" || cart[id] <= 0){ delete cart[id]; delete cartFreq[id]; }
+  updateCartBtn(); renderCart();
+});
+$("cCep").addEventListener("input", e => {
+  let v = e.target.value.replace(/\D/g,"").slice(0,8);
+  if(v.length > 5) v = v.slice(0,5) + "-" + v.slice(5);
+  e.target.value = v;
+  const h = $("cCepHint");
+  if(v.replace("-","").length === 8){ h.textContent = "Entrega em até 5 dias úteis"; h.className = "hint ok"; }
+  else { h.textContent = v ? "CEP com 8 dígitos" : ""; h.className = "hint"; }
+  renderCart();
+});
+$("cartBtn").onclick = openCart;
+$("cClose").onclick = () => $("cart").close();
+$("cFinish").onclick = () => {
+  const ids = Object.keys(cart);
+  if(!ids.length) return;
+  if($("cCep").value.replace(/\D/g,"").length !== 8){ $("cErr").textContent = "Informe um CEP com 8 dígitos para calcular o frete."; return; }
+  const total = renderCart();
+  const o = {num: orderSeq++, total, pag: $("cPag").value, stage: 0, items: ids.map(id => ({n: prodById(id).n + (cartFreq[id] ? " (programada)" : ""), q: cart[id]}))};
+  orders.push(o);
+  ids.forEach(id => {
+    if(cartFreq[id]){
+      const next = new Date(); next.setDate(next.getDate() + cartFreq[id]);
+      progs.push({id: progSeq++, prod: id, q: cart[id], freq: cartFreq[id], next, status: "ativa"});
+    }
+    delete cart[id]; delete cartFreq[id];
+  });
+  renderProgs();
+  updateCartBtn();
+  $("cart").close();
+  renderOrders();
+  toast(`Pedido #${o.num} confirmado!`);
+  document.getElementById("conta").scrollIntoView();
+};
+$("orders").addEventListener("click", e => {
+  const b = e.target.closest("[data-adv]"); if(!b) return;
+  const o = orders.find(x => x.num == b.dataset.adv);
+  o.stage++; renderOrders(); toast(`Pedido #${o.num}: ${STAGES[o.stage].toLowerCase()}`);
+});
+bindSeg($("fPet"), v => { loja.pet = v; renderStore(); });
+bindSeg($("fCat"), v => { loja.cat = v; renderStore(); });
+
+$("heroCats").addEventListener("click", e => {
+  const b = e.target.closest("[data-cat]"); if(!b) return;
+  loja.cat = b.dataset.cat; setSeg($("fCat"), loja.cat); renderStore();
+  document.getElementById("loja").scrollIntoView();
+});
+
+/* compra programada */
+const cartFreq = {};
+const progs = [];
+let progSeq = 1;
+function freqSelect(id){
+  const f = cartFreq[id] || 0;
+  const opts = [[0,"Compra única"],[30,"Programar a cada 30 dias (5% off)"],[45,"Programar a cada 45 dias (5% off)"],[60,"Programar a cada 60 dias (5% off)"]];
+  return `<select class="freq" data-freq="${id}" aria-label="Frequência de entrega">${opts.map(([v,l])=>`<option value="${v}" ${v===f?"selected":""}>${l}</option>`).join("")}</select>`;
+}
+$("cartLines").addEventListener("change", e => {
+  const s = e.target.closest("[data-freq]"); if(!s) return;
+  const v = +s.value;
+  if(v) cartFreq[s.dataset.freq] = v; else delete cartFreq[s.dataset.freq];
+  renderCart();
+});
+function renderProgs(){
+  const el = $("progs");
+  const ativos = progs.filter(g => g.status !== "cancelada");
+  if(!ativos.length){
+    el.innerHTML = `<p class="sub" style="margin-top:8px">Nenhuma compra programada. Na loja, itens como ração e areia podem ser programados direto no carrinho.</p>`;
+    return;
+  }
+  el.innerHTML = ativos.map(g => {
+    const p = prodById(g.prod);
+    const preco = p.p * g.q * 0.95 * (isAssinante() ? 0.9 : 1);
+    return `<div class="order">
+      <div class="ohead"><span>${p.em} ${g.q}× ${p.n}</span><span>${brl(preco)} por entrega</span></div>
+      <div class="oitems">${g.status === "pausada" ? "Pausada" : `Próxima entrega em ${fmtData(g.next)}`}, a cada ${g.freq} dias.</div>
+      <div class="prog-actions">
+        <select class="freq" data-pfreq="${g.id}" aria-label="Frequência">${[30,45,60].map(v=>`<option value="${v}" ${v===g.freq?"selected":""}>A cada ${v} dias</option>`).join("")}</select>
+        <button class="btn btn-ghost btn-sm" data-pact="pause" data-id="${g.id}">${g.status==="pausada"?"Retomar":"Pausar"}</button>
+        <button class="btn btn-ghost btn-sm" data-pact="skip" data-id="${g.id}" ${g.status!=="ativa"?"disabled":""}>Pular próxima</button>
+        <button class="btn btn-danger btn-sm" data-pact="cancel" data-id="${g.id}">Cancelar</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+$("progs").addEventListener("click", e => {
+  const b = e.target.closest("[data-pact]"); if(!b) return;
+  const g = progs.find(x => x.id == b.dataset.id);
+  if(b.dataset.pact === "pause"){ g.status = g.status === "pausada" ? "ativa" : "pausada"; toast(g.status === "pausada" ? "Compra programada pausada" : "Compra programada retomada"); }
+  if(b.dataset.pact === "skip"){ g.next = new Date(g.next); g.next.setDate(g.next.getDate() + g.freq); toast(`Próxima entrega em ${fmtData(g.next)}`); }
+  if(b.dataset.pact === "cancel"){ if(!confirm("Cancelar esta compra programada?")) return; g.status = "cancelada"; toast("Compra programada cancelada"); }
+  renderProgs();
+});
+$("progs").addEventListener("change", e => {
+  const s = e.target.closest("[data-pfreq]"); if(!s) return;
+  const g = progs.find(x => x.id == s.dataset.pfreq);
+  const diff = +s.value - g.freq;
+  g.freq = +s.value; g.next = new Date(g.next); g.next.setDate(g.next.getDate() + diff);
+  renderProgs(); toast(`Frequência alterada para ${g.freq} dias`);
+});
+
+/* wiring */
+bindSeg($("segPet"), v => { state.pet = v; renderBuilder(); });
+bindSeg($("segPorte"), v => { state.porte = v; renderBuilder(); });
+bindSeg($("segPlano"), v => { state.plano = v; renderBuilder(); });
+$("plansGrid").addEventListener("click", e => {
+  const b = e.target.closest(".plan"); if(!b) return;
+  state.plano = b.dataset.v; renderBuilder();
+  document.getElementById("montar").scrollIntoView();
+});
+
+renderBuilder();
+renderAccount();
+renderStore();
+renderOrders();
+renderProgs();
+</script>
+</body>
+</html>
