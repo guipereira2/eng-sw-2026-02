@@ -1,0 +1,121 @@
+[project]
+name = "ciclobox"
+version = "0.1.0"
+description = "Backend do Ciclo Box, e-commerce de assinaturas para pets"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.20.1",
+    "fastapi>=0.165.0",
+    "psycopg[binary]>=3.3.9",
+    "pydantic-settings>=2.16.3",
+    "sqlalchemy>=2.1.9",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ciclobox"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers"
+markers = ["integration: testes que dependem de Postgres real"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "S"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+
+[tool.pyright]
+include = ["src", "tests"]
+pythonVersion = "3.12"
+typeCheckingMode = "standard"
+venvPath = "."
+venv = ".venv"
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.16.2",
+    "import-linter>=2.17",
+    "pyright>=1.1.414",
+    "pytest>=9.2.0",
+    "ruff>=0.17.6",
+]
+
+[tool.importlinter]
+root_package = "ciclobox"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Cada módulo respeita adapters > application > domain"
+type = "layers"
+layers = ["adapters", "application", "domain"]
+containers = [
+    "ciclobox.assinaturas",
+    "ciclobox.pagamentos",
+    "ciclobox.catalogo",
+    "ciclobox.contas",
+]
+
+[[tool.importlinter.contracts]]
+name = "O domínio não conhece framework nem banco"
+type = "forbidden"
+source_modules = [
+    "ciclobox.assinaturas.domain",
+    "ciclobox.pagamentos.domain",
+    "ciclobox.catalogo.domain",
+    "ciclobox.contas.domain",
+]
+forbidden_modules = ["fastapi", "sqlalchemy", "psycopg", "alembic"]
+
+[[tool.importlinter.contracts]]
+name = "assinaturas só acessa outros módulos pela fachada"
+type = "forbidden"
+source_modules = ["ciclobox.assinaturas"]
+forbidden_modules = [
+    "ciclobox.pagamentos.domain", "ciclobox.pagamentos.application", "ciclobox.pagamentos.adapters",
+    "ciclobox.catalogo.domain", "ciclobox.catalogo.application", "ciclobox.catalogo.adapters",
+    "ciclobox.contas.domain", "ciclobox.contas.application", "ciclobox.contas.adapters",
+]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "pagamentos só acessa outros módulos pela fachada"
+type = "forbidden"
+source_modules = ["ciclobox.pagamentos"]
+forbidden_modules = [
+    "ciclobox.assinaturas.domain", "ciclobox.assinaturas.application", "ciclobox.assinaturas.adapters",
+    "ciclobox.catalogo.domain", "ciclobox.catalogo.application", "ciclobox.catalogo.adapters",
+    "ciclobox.contas.domain", "ciclobox.contas.application", "ciclobox.contas.adapters",
+]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "catalogo só acessa outros módulos pela fachada"
+type = "forbidden"
+source_modules = ["ciclobox.catalogo"]
+forbidden_modules = [
+    "ciclobox.assinaturas.domain", "ciclobox.assinaturas.application", "ciclobox.assinaturas.adapters",
+    "ciclobox.pagamentos.domain", "ciclobox.pagamentos.application", "ciclobox.pagamentos.adapters",
+    "ciclobox.contas.domain", "ciclobox.contas.application", "ciclobox.contas.adapters",
+]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "contas só acessa outros módulos pela fachada"
+type = "forbidden"
+source_modules = ["ciclobox.contas"]
+forbidden_modules = [
+    "ciclobox.assinaturas.domain", "ciclobox.assinaturas.application", "ciclobox.assinaturas.adapters",
+    "ciclobox.pagamentos.domain", "ciclobox.pagamentos.application", "ciclobox.pagamentos.adapters",
+    "ciclobox.catalogo.domain", "ciclobox.catalogo.application", "ciclobox.catalogo.adapters",
+]
+allow_indirect_imports = true
