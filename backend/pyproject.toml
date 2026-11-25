@@ -63,6 +63,7 @@ containers = [
     "ciclobox.pagamentos",
     "ciclobox.catalogo",
     "ciclobox.contas",
+    "ciclobox.pedidos",
 ]
 
 [[tool.importlinter.contracts]]
@@ -73,6 +74,7 @@ source_modules = [
     "ciclobox.pagamentos.domain",
     "ciclobox.catalogo.domain",
     "ciclobox.contas.domain",
+    "ciclobox.pedidos.domain",
 ]
 forbidden_modules = ["fastapi", "sqlalchemy", "psycopg", "alembic"]
 
@@ -84,6 +86,7 @@ forbidden_modules = [
     "ciclobox.pagamentos.domain", "ciclobox.pagamentos.application", "ciclobox.pagamentos.adapters",
     "ciclobox.catalogo.domain", "ciclobox.catalogo.application", "ciclobox.catalogo.adapters",
     "ciclobox.contas.domain", "ciclobox.contas.application", "ciclobox.contas.adapters",
+    "ciclobox.pedidos.domain", "ciclobox.pedidos.application", "ciclobox.pedidos.adapters",
 ]
 allow_indirect_imports = true
 
@@ -95,6 +98,7 @@ forbidden_modules = [
     "ciclobox.assinaturas.domain", "ciclobox.assinaturas.application", "ciclobox.assinaturas.adapters",
     "ciclobox.catalogo.domain", "ciclobox.catalogo.application", "ciclobox.catalogo.adapters",
     "ciclobox.contas.domain", "ciclobox.contas.application", "ciclobox.contas.adapters",
+    "ciclobox.pedidos.domain", "ciclobox.pedidos.application", "ciclobox.pedidos.adapters",
 ]
 allow_indirect_imports = true
 
@@ -106,6 +110,7 @@ forbidden_modules = [
     "ciclobox.assinaturas.domain", "ciclobox.assinaturas.application", "ciclobox.assinaturas.adapters",
     "ciclobox.pagamentos.domain", "ciclobox.pagamentos.application", "ciclobox.pagamentos.adapters",
     "ciclobox.contas.domain", "ciclobox.contas.application", "ciclobox.contas.adapters",
+    "ciclobox.pedidos.domain", "ciclobox.pedidos.application", "ciclobox.pedidos.adapters",
 ]
 allow_indirect_imports = true
 
@@ -117,5 +122,18 @@ forbidden_modules = [
     "ciclobox.assinaturas.domain", "ciclobox.assinaturas.application", "ciclobox.assinaturas.adapters",
     "ciclobox.pagamentos.domain", "ciclobox.pagamentos.application", "ciclobox.pagamentos.adapters",
     "ciclobox.catalogo.domain", "ciclobox.catalogo.application", "ciclobox.catalogo.adapters",
+    "ciclobox.pedidos.domain", "ciclobox.pedidos.application", "ciclobox.pedidos.adapters",
+]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "pedidos só acessa outros módulos pela fachada"
+type = "forbidden"
+source_modules = ["ciclobox.pedidos"]
+forbidden_modules = [
+    "ciclobox.assinaturas.domain", "ciclobox.assinaturas.application", "ciclobox.assinaturas.adapters",
+    "ciclobox.pagamentos.domain", "ciclobox.pagamentos.application", "ciclobox.pagamentos.adapters",
+    "ciclobox.catalogo.domain", "ciclobox.catalogo.application", "ciclobox.catalogo.adapters",
+    "ciclobox.contas.domain", "ciclobox.contas.application", "ciclobox.contas.adapters",
 ]
 allow_indirect_imports = true
