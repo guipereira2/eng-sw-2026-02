@@ -15,11 +15,24 @@ As regras de negócio vieram do protótipo em `frontend/index.html`, que foi só
 | Catálogo | HU03 | `catalogo` |
 | Assinar o Clube | HU04, HU05, HU06 | `assinaturas` |
 | Gerenciar a assinatura | HU07, HU08, HU09, HU10, HU11 | `assinaturas` |
-| Carrinho e pedidos da loja | HU12, HU13, HU14, HU15 | `pedidos` |
+| Carrinho e pedidos da loja (implementado, com provisórios) | HU12, HU13, HU14, HU15 | `pedidos` |
 | Compra programada | HU16, HU17, HU18 | `pedidos` |
 | Pagamentos | HU19 | `pagamentos` |
 
 As histórias marcadas com **(se der tempo)** podem ficar de fora se o prazo apertar.
+
+## Decisões provisórias
+
+Escolhas feitas porque uma parte de outro fluxo ainda não existia. Cada uma diz o que fazer quando essa parte ficar pronta.
+
+| Onde | O que foi feito | Por quê | Quando resolver |
+|---|---|---|---|
+| Rotas de `pedidos` | O usuário vem do header `X-Usuario-Id` (arquivo `pedidos/adapters/usuario_provisorio.py`). Sem o header, `401`. Não tem segurança nenhuma. | O login (HU02) ainda não existe. | Quando a HU02 criar a dependência `usuario_logado`: trocar `UsuarioId` e `UsuarioIdOpcional` nas rotas de `pedidos` por ela e apagar o `usuario_provisorio.py`. |
+| Desconto e frete de membro na loja | `ClubeProvisorio` (em `pedidos/adapters/integracoes.py`) responde sempre "não é membro". Pela API, o desconto de 10% e o frete grátis de membro nunca aparecem. A regra em si está pronta e testada. | O `eh_membro` da fachada de `assinaturas` (HU06) ainda não existe. | Quando a HU06 publicar `assinaturas.facade.eh_membro`: criar uma classe que chame a fachada, como a `CatalogoViaFachada`, e usar no lugar do `ClubeProvisorio` em `pedidos/adapters/rotas.py`. |
+| Fachada do `catalogo` | A função `buscar_produtos(session, ids)` foi criada pelo fluxo de pedidos, junto com `buscar_por_ids` no repositório. | O carrinho precisa de preço e nome, e a HU03 ainda não tinha sido feita. | Quem pegar a HU03 não precisa refazer: só seguir com listagem, filtros e rotas. |
+| Compra programada | Ao finalizar o pedido, cada item com frequência já gera uma compra programada. A entidade `CompraProgramada`, a tabela `compras_programadas` e o repositório (só `salvar`) já existem. | Decisão do grupo de adiantar a criação junto com a HU13. | Quem pegar a HU16 a HU18 continua desses arquivos: falta listar, pausar, retomar, pular, cancelar e trocar frequência. |
+| Pagamento do pedido | O pedido nasce `Pago`, mas nenhum pagamento é registrado. | O módulo `pagamentos` (HU19) ainda não existe. | Quando a HU19 existir: chamar `registrar_pagamento` no fim de `pedidos/application/finalizar_pedido.py`. |
+| Caixa do Clube | `POST /api/assinaturas/minha/avancar-entrega` (parte da HU15) não foi feito. | Fica no módulo `assinaturas`, do fluxo da Thaís. | Junto com a HU06. A sequência de status pode copiar a do `pedidos/domain/pedido.py`. |
 
 ## Padrões para todos
 
@@ -52,6 +65,11 @@ Para o código ficar com a mesma cara, independente de quem fez:
   ```
   Exemplo: 5% de R$ 189,90 = R$ 9,495 → **R$ 9,50**. O desconto de membro é calculado sobre R$ 229,70 − R$ 9,50, e não sobre R$ 229,70 − R$ 9,495.
   A função `arredondar` já existe em `ciclobox/shared/dinheiro.py`. Todos os módulos usam essa.
+- **Erros de regra no `domain/`:** lançar um dos erros de `ciclobox/shared/erros.py`. A API transforma sozinha no status certo, com `{"detail": "mensagem"}`:
+  - `DadoInvalidoError` → `422` (ex.: produto que não aceita compra programada).
+  - `RegraDeNegocioError` → `409` (ex.: avançar pedido já entregue).
+  - `NaoEncontradoError` → `404` (ex.: pedido de outro usuário).
+- **Sessão de banco nas rotas:** usar a dependência `get_session` de `ciclobox/shared/database.py`. Ela faz commit se a rota terminar bem e rollback se der erro. Exemplo em `pedidos/adapters/rotas.py`.
 - **Entre módulos:** guardar só o id (ex.: `usuario_id`), sem chave estrangeira para tabela de outro módulo.
 - **Migration:** uma por PR. Antes do merge, atualizar a branch com a `main`; se outra migration entrou antes, regerar a sua.
 
@@ -185,7 +203,7 @@ Depois do T03 pronto, cada um segue o mesmo caminho. O passo a passo está no fi
 - [ ] Repositório com `listar(pet, categoria)` e `buscar_por_id`.
 - [ ] Regra do filtro "ambos" no `domain/` ou na consulta.
 - [ ] Rotas.
-- [ ] `facade.py` com `buscar_produtos(ids)`, que o fluxo de pedidos vai usar para pegar preço e se aceita programada.
+- [x] `facade.py` com `buscar_produtos(ids)`, que o fluxo de pedidos vai usar para pegar preço e se aceita programada. Feito junto com o fluxo de pedidos (ver "Decisões provisórias").
 - [ ] Testes: filtro por cão traz "ambos", filtro por categoria, produto inexistente.
 
 ## Fluxo: Assinar o Clube
@@ -481,7 +499,7 @@ Nenhum dos dois tem corpo na requisição.
 
 O carrinho fica no front. A API só recebe os itens na hora de calcular e de fechar o pedido. Assim não precisa de tabela de carrinho.
 
-### HU12: Calcular os totais do carrinho
+### HU12: Calcular os totais do carrinho (implementado, membro provisório)
 
 > Como cliente, quero ver descontos e frete antes de fechar o pedido.
 
@@ -516,12 +534,12 @@ O carrinho fica no front. A API só recebe os itens na hora de calcular e de fec
 - Os preços vêm do banco (fachada do `catalogo`), nunca do front.
 
 **Tarefas:**
-- [ ] Função de cálculo no `domain/`, sem banco.
-- [ ] Caso de uso que busca os produtos no `catalogo` e o status de membro em `assinaturas`.
-- [ ] Rota.
-- [ ] Testes: sem desconto, só programada, só membro, os dois juntos, frete grátis no limite de R$ 150.
+- [x] Função de cálculo no `domain/`, sem banco.
+- [x] Caso de uso que busca os produtos no `catalogo` e o status de membro em `assinaturas`. O status de membro é provisório (ver "Decisões provisórias").
+- [x] Rota.
+- [x] Testes: sem desconto, só programada, só membro, os dois juntos, frete grátis no limite de R$ 150.
 
-### HU13: Finalizar pedido da loja
+### HU13: Finalizar pedido da loja (implementado, sem pagamento)
 
 > Como cliente, quero finalizar minha compra.
 
@@ -563,14 +581,15 @@ O carrinho fica no front. A API só recebe os itens na hora de calcular e de fec
 - Cada item com frequência gera uma compra programada (HU16), com próxima entrega = hoje + frequência.
 
 **Tarefas:**
-- [ ] Entidades `Pedido` e `ItemPedido` no `domain/`.
-- [ ] Tabelas `pedidos` e `itens_pedido` e migration.
-- [ ] Repositório.
-- [ ] Caso de uso `finalizar_pedido`: calcula, salva o pedido, cria as compras programadas e registra o pagamento (HU19).
-- [ ] Rota.
-- [ ] Testes: pedido ok, carrinho vazio, CEP inválido, item programado gera compra programada.
+- [x] Entidades `Pedido` e `ItemPedido` no `domain/`.
+- [x] Tabelas `pedidos` e `itens_pedido` e migration.
+- [x] Repositório.
+- [x] Caso de uso `finalizar_pedido`: calcula, salva o pedido e cria as compras programadas.
+- [ ] Registrar o pagamento (HU19), quando o módulo `pagamentos` existir.
+- [x] Rota.
+- [x] Testes: pedido ok, carrinho vazio, CEP inválido, item programado gera compra programada.
 
-### HU14: Listar meus pedidos
+### HU14: Listar meus pedidos (implementado)
 
 > Como cliente, quero ver meus pedidos e onde cada um está.
 
@@ -599,11 +618,11 @@ Devolve a lista de pedidos do usuário, do mais novo para o mais antigo. Cada it
 ```
 
 **Tarefas:**
-- [ ] Repositório com `listar_do_usuario`.
-- [ ] Rota.
-- [ ] Teste: um usuário não vê o pedido do outro.
+- [x] Repositório com `listar_do_usuario`.
+- [x] Rota.
+- [x] Teste: um usuário não vê o pedido do outro.
 
-### HU15: Avançar o status do pedido
+### HU15: Avançar o status do pedido (implementado só para a loja)
 
 > Como operador da demo, quero avançar o status de um pedido para simular a entrega.
 
@@ -648,9 +667,8 @@ Nenhum dos dois tem corpo na requisição. Cada um devolve o recurso atualizado:
 - `Entregue` não avança mais: `409`.
 
 **Tarefas:**
-- [ ] A sequência de status e a função `proximo_status` no `domain/` de cada módulo (são poucas linhas, pode repetir).
-- [ ] Casos de uso e rotas.
-- [ ] Testes: cada passo e o `409` no final.
+- [x] Pedidos da loja: sequência de status e `avancar_status()` em `pedidos/domain/pedido.py`, caso de uso, rota e testes (cada passo, `409` no final e `404` para pedido de outro usuário).
+- [ ] Caixa do Clube: `POST /api/assinaturas/minha/avancar-entrega`, no módulo `assinaturas` (ver "Decisões provisórias").
 
 ## Fluxo: Compra programada
 
@@ -681,9 +699,10 @@ Fica no módulo `pedidos`. Todas as rotas precisam de login.
 - Canceladas não aparecem.
 
 **Tarefas:**
-- [ ] Entidade `CompraProgramada` no `domain/`.
-- [ ] Tabela `compras_programadas` e migration (pode ir junto com a da HU13, combinar com quem pegou).
-- [ ] Repositório e rota.
+- [x] Entidade `CompraProgramada` no `domain/` (`pedidos/domain/compra_programada.py`). Feito junto com a HU13.
+- [x] Tabela `compras_programadas` e migration. Feito junto com a HU13.
+- [ ] Repositório: falta `listar_do_usuario` (o `salvar` já existe em `pedidos/adapters/compra_programada_repository.py`).
+- [ ] Rota.
 - [ ] Teste: cancelada não aparece.
 
 ### HU17: Pausar, retomar, pular e cancelar

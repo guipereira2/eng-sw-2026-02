@@ -1,3 +1,4 @@
+from collections.abc import Iterable
 from typing import Protocol
 
 from ciclobox.catalogo.domain.produto import Produto
@@ -11,5 +12,7 @@ class ProdutoRepository(Protocol):
     """
 
     def buscar_por_id(self, produto_id: int) -> Produto | None: ...
+
+    def buscar_por_ids(self, produto_ids: Iterable[int]) -> list[Produto]: ...
 
     def salvar(self, produto: Produto) -> Produto: ...
