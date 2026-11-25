@@ -2,6 +2,8 @@ from logging.config import fileConfig
 
 from alembic import context
 
+# Cada módulo com tabela importa o seu models.py aqui, senão o Alembic não enxerga a tabela.
+import ciclobox.catalogo.adapters.models  # noqa: F401
 from ciclobox.shared.config import get_settings
 from ciclobox.shared.database import Base, get_engine
 

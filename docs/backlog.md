@@ -10,7 +10,7 @@ As regras de negócio vieram do protótipo em `frontend/index.html`, que foi só
 
 | Fluxo | Histórias | Módulo |
 |---|---|---|
-| Antes de começar | T01, T02, T03 | vários |
+| Antes de começar (implementado) | T01, T02, T03 | vários |
 | Login e cadastro | HU01, HU02 | `contas` |
 | Catálogo | HU03 | `catalogo` |
 | Assinar o Clube | HU04, HU05, HU06 | `assinaturas` |
@@ -51,25 +51,26 @@ Para o código ficar com a mesma cara, independente de quem fez:
       return valor.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
   ```
   Exemplo: 5% de R$ 189,90 = R$ 9,495 → **R$ 9,50**. O desconto de membro é calculado sobre R$ 229,70 − R$ 9,50, e não sobre R$ 229,70 − R$ 9,495.
-  A função `arredondar` fica num lugar só, para todos os módulos usarem a mesma (combinar onde no T01).
+  A função `arredondar` já existe em `ciclobox/shared/dinheiro.py`. Todos os módulos usam essa.
 - **Entre módulos:** guardar só o id (ex.: `usuario_id`), sem chave estrangeira para tabela de outro módulo.
 - **Migration:** uma por PR. Antes do merge, atualizar a branch com a `main`; se outra migration entrou antes, regerar a sua.
 
 ## Antes de começar
 
-**T01: Modelo de entidades**
-- [ ] Desenhar o diagrama com Usuario, Produto, Assinatura, HistoricoAssinatura, Pedido, ItemPedido, CompraProgramada e Pagamento, com os campos principais.
-- [ ] Combinar no grupo antes de alguém criar tabela.
+**T01: Modelo de entidades** (implementado)
+- [x] Desenhar o diagrama com Usuario, Produto, Assinatura, HistoricoAssinatura, Pedido, ItemPedido, CompraProgramada e Pagamento, com os campos principais. Está em [modelo-de-dados.md](modelo-de-dados.md).
+- [x] Função `arredondar` em `ciclobox/shared/dinheiro.py`.
+- [ ] Grupo validar a proposta antes de alguém criar tabela. Se quiser mudar algo, muda no `modelo-de-dados.md` por PR.
 
-**T02: Criar o módulo `pedidos`**
-- [ ] Criar `backend/src/ciclobox/pedidos/` com `domain/`, `application/`, `adapters/`, `ports.py` e `facade.py`, igual aos outros.
-- [ ] Adicionar o módulo nos contratos do import-linter no `pyproject.toml`.
+**T02: Criar o módulo `pedidos`** (implementado)
+- [x] Criar `backend/src/ciclobox/pedidos/` com `domain/`, `application/`, `adapters/`, `ports.py` e `facade.py`, igual aos outros.
+- [x] Adicionar o módulo nos contratos do import-linter no `pyproject.toml`.
 
-**T03: Módulo de referência (Produto)**
-- [ ] Fazer o Produto completo (entidade, tabela, migration e seed) para servir de exemplo para todo mundo copiar o padrão.
-- [ ] Seed com uma lista inicial de produtos. A lista do protótipo (`PRODUCTS` no `frontend/index.html`) serve de ponto de partida, mas o grupo pode mudar à vontade.
+**T03: Módulo de referência (Produto)** (implementado)
+- [x] Fazer o Produto completo (entidade, tabela, migration e seed) para servir de exemplo para todo mundo copiar o padrão.
+- [x] Seed com uma lista inicial de produtos. A lista do protótipo (`PRODUCTS` no `frontend/index.html`) serve de ponto de partida, mas o grupo pode mudar à vontade.
 
-Depois do T03 pronto, cada um segue o mesmo caminho.
+Depois do T03 pronto, cada um segue o mesmo caminho. O passo a passo está no fim do [modelo-de-dados.md](modelo-de-dados.md#como-uma-tabela-nova-entra-no-projeto).
 
 ## Fluxo: Login e cadastro
 
