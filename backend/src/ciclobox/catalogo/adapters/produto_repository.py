@@ -1,3 +1,6 @@
+from collections.abc import Iterable
+
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ciclobox.catalogo.adapters.models import ProdutoModel
@@ -17,6 +20,13 @@ class SqlAlchemyProdutoRepository:
     def buscar_por_id(self, produto_id: int) -> Produto | None:
         model = self._session.get(ProdutoModel, produto_id)
         return _para_entidade(model) if model else None
+
+    def buscar_por_ids(self, produto_ids: Iterable[int]) -> list[Produto]:
+        ids = list(produto_ids)
+        if not ids:
+            return []
+        models = self._session.scalars(select(ProdutoModel).where(ProdutoModel.id.in_(ids)))
+        return [_para_entidade(model) for model in models]
 
     def salvar(self, produto: Produto) -> Produto:
         model = ProdutoModel(
