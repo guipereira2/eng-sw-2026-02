@@ -206,8 +206,8 @@ Depois do T03 pronto, cada um segue o mesmo caminho. O passo a passo está no fi
 ```
 
 **Tarefas:**
-- [ ] Planos como constante no `domain/` (não precisa de tabela, são fixos).
-- [ ] Rota.
+- [X] Planos como constante no `domain/` (não precisa de tabela, são fixos).
+- [X] Rota.
 
 ### HU05: Calcular o preço da assinatura
 
